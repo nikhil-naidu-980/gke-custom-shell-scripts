@@ -41,6 +41,6 @@ resource "google_compute_firewall" "gke_allow_inbound" {
     }
 
     source_ranges   = ["0.0.0.0/0"]
-    traget_tags     = ["gke-node"]
+    target_tags     = ["gke-node"]
 }
 
