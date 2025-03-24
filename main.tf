@@ -44,3 +44,37 @@ resource "google_compute_firewall" "gke_allow_inbound" {
     target_tags     = ["gke-node"]
 }
 
+#Create GKE cluster now
+resource "google_container_cluster" "gke" {
+    name            = "my-gke-cluster"
+    location        = "us-west1-a"
+
+    initial_node_count =1
+
+    node_config {
+        machine_type = "e2-medium"
+        oauth_scopes =[
+           "https://www.googleapis.com/auth/cloud-platform" 
+        ]
+        tags = ["gke-node"]
+        metadata = {
+            disable-legacy-endpints = "true"
+        }
+    }
+
+    networking_mode = "VPC_NATIVE"
+
+    subnetwork = google_compute_subnetwork.public_subnet.id 
+
+    # Disabling protection so that we can delete after testing
+    deletion_protection = false 
+
+    #Configure private cluster but public endpoint
+    private_cluster_config {
+        enable_private_nodes    = true
+        enable_private_endpoint  = false 
+    }
+
+    network = google_compute_network.vpc.id 
+}
+
