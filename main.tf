@@ -5,6 +5,14 @@ provider "google" {
     project = "rare-hub-452618-j9"
 }
 
+data "google_client_config" "default" {}
+
+provider "kubernetes" {
+    host                    = "https://${google_container_cluster.gke.endpoint}"
+    cluster_ca_certificate  = base64decode(google_container_cluster.gke.master_auth[0].cluster_ca_certificate)
+    token                   = data.google_client_config.access_token
+}
+
 #Create VPC
 resource "google_compute_network" "vpc" {
     name = "gke-vpc"
@@ -77,4 +85,56 @@ resource "google_container_cluster" "gke" {
 
     network = google_compute_network.vpc.id 
 }
+
+# IAM Role for GKE cluster
+resource "google_service_account" "gke_service_account" {
+    account_id          = "gke-service-account"
+    display_name        = "GKE Service Account"
+}
+
+# IAM role attachment for GKE SA
+resource "google_project_iam_member" "gke_service_account_role" {
+    project             = "rare-hub-452618-j9"
+    role                = "roles/container.clusterAdmin"
+    member              = "serviceAccount:${google_service_account.gke_service_account.email}"
+}
+
+resource "google_project_iam_member" "gke_node_role" {
+    project             = "rare-hub-452618-j9"
+    role                = "roles/compute.instanceAdmin"
+    member              = "serviceAccount:${google_service_account.gke_service_account.email}"
+}
+
+resource "google_project_iam_member" "gke_node_pull_images" {
+    project             = "rare-hub-452618-j9"
+    role                = "roles/storage.objectViewer"
+    member              = "serviceAccount:${google_service_account.gke_service_account.email}"
+}
+
+resource "google_project_iam_member" "gke_service_account_artifact_registry" {
+    project             = "rare-hub-452618-j9"
+    role                = "roles/artifactregistry.reader"
+    member              = "serviceAccount:${google_service_account.gke_service_account.email}"
+}
+
+# Create Node pool
+resource "google_container_node_pool" "node_pool" {
+    name                = "default-node-pool"
+    location            = "us-west1-a"
+    cluster             = google_container_cluster.gke.name 
+    node_count          = 1
+
+    node_config {
+        machine_type    = "e2-medium"
+        oauth_scopes = [
+            "https://www.googleapis.com/auth/cloud-platform"
+        ]
+
+        tags            = ["gke-node"]
+        service_account = google_service_account.gke_service_account.email 
+    }
+}
+
+
+
 
