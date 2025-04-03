@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-web-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple-web-app
+  template:
+    metadata:
+      labels:
+        app: simple-web-app
+    spec:
+      containers:
+      - name: simple-web-app
+        image: httpd:latest
+        ports:
+        - containerPort: 80
+        command:
+          - "sh"
+          - "-c"
+          - |
+            echo "<!DOCTYPE html><html><head><title>Simple Web App</title></head><body><h1>Hello, World from Simple Web App!</h1></body></html>" > /usr/local/apache2/htdocs/index.html
+            httpd-foreground
+
+
