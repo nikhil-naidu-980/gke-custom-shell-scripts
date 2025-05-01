@@ -1,4 +1,4 @@
-# GKE Custom SSH Script
+# GKE Custom Scripts
 
 This repo contains a custom shell script which will help you to exec into a GKE  pod.
 
@@ -24,10 +24,23 @@ Create `envs.sh` file with the workloads information in the following format. Fo
   ;;
 ```
 
-This will be sourced into `gkessh.sh` and then script will check the number pods. If there's only one pod, it will directly exec you into the pod. If there are more than one pods, it will list out all the pods for you to select.
+## SSH script
+
+The `envs.sh` will be sourced into `gkessh.sh` and then script will check the number pods. If there's only one pod, it will directly exec you into the pod. If there are more than one pods, it will list out all the pods for you to select.
 
 ```bash
  ./gkessh nginx
 ```
 
+## SCP script
+
+This script can be used to copy the files from local to container and vice versa.
+
+```bash
+ ./gkescp nginx up test.txt /tmp/test.txt
+ ./gkescp nginx down /tmp/test.txt test.txt
+```
+
 If you face any issues with the permissions, please run `chmod +x script.sh`
+
+
