@@ -1,7 +1,5 @@
 #!/bin/bash
-# Usage:
-# Upload file: ./jscp devus up test.txt /tmp/test.txt
-# Download file: ./jscp devus down /tmp/test.txt test.txt
+
 
 source ./envs.sh
 
